@@ -75,8 +75,8 @@ uvicorn main:app --reload
 ### 2. 프론트엔드 실행
 
 ```bash
-cd frontend
 pip install -r requirements.txt
+cd frontend
 streamlit run app.py
 ```
 
@@ -212,7 +212,6 @@ frontend/
   run_local.bat   # Windows: 8503 포트로 로컬 실행
   run_local.sh    # Mac/Linux: 8503 포트로 로컬 실행
   .streamlit/config.toml  # headless, gatherUsageStats (port 미지정 → Cloud 8501 통과)
-  requirements.txt   # streamlit, requests, python-dotenv
   .env.example
 app.py                  # 루트: Streamlit Cloud 진입점 (frontend 앱 로드)
 .streamlit/config.toml  # 루트: Cloud 필수 (config는 루트에 두어야 함)
