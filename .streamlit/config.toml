@@ -1,0 +1,6 @@
+# Streamlit Cloud / 루트에서 streamlit run frontend/app.py 시 적용
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false
