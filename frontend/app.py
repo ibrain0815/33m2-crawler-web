@@ -178,6 +178,7 @@ def main() -> None:
         st.session_state["progress_log"] = []
 
     st.subheader("📊 크롤링 진행 현황")
+    st.caption("백엔드에서 상태를 가져오는 중… 연결이 안 되면 아래에 오류가 표시됩니다.")
     progress_placeholder = st.empty()
     status_placeholder = st.empty()
     log_placeholder = st.empty()
@@ -190,7 +191,7 @@ def main() -> None:
         current = data.get("current_page", 0)
         total = data.get("max_pages", 1) or 1
         total_listings = data.get("total_listings", 0)
-        listings = data.get("listings", [])
+        listings = data.get("listings") if isinstance(data.get("listings"), list) else []
         progress_pct = data.get("progress_percent", 0) or (100 * current / total if total else 0)
 
         # 로그 한 줄 추가
@@ -226,17 +227,18 @@ def main() -> None:
         if status == "failed":
             err_msg = data.get("error_message") or "알 수 없는 오류"
             st.error(err_msg)
-            if data.get("job_not_found"):
-                if "job_id" in st.session_state:
-                    del st.session_state["job_id"]
-                st.info("아래에서 URL을 입력한 뒤 **크롤링 시작**을 다시 눌러 주세요.")
+            if "job_id" in st.session_state:
+                del st.session_state["job_id"]
+            st.info("아래에서 URL을 입력한 뒤 **크롤링 시작**을 다시 눌러 주세요.")
+            if st.button("처음으로 (입력 화면으로 돌아가기)", type="primary"):
                 st.rerun()
-            break
+            st.stop()
         if status == "completed":
             st.success(f"크롤링 완료: 총 {total_listings}건 수집")
 
     # 엑셀 내보내기
-    if last_data.get("status") == "completed" and last_data.get("listings"):
+    listings_for_download = last_data.get("listings") if isinstance(last_data.get("listings"), list) else []
+    if last_data.get("status") == "completed" and listings_for_download:
         st.subheader("엑셀 내보내기")
         try:
             resp = requests.get(get_download_url(job_id), timeout=30)
