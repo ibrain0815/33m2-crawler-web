@@ -103,7 +103,7 @@ streamlit run app.py
 1. [share.streamlit.io](https://share.streamlit.io) 로그인 후 **New app** 선택
 2. **Repository**: 본인 GitHub `사용자명/저장소명` 선택
 3. **Branch**: `main` (또는 사용 중인 브랜치)
-4. **Main file path**: `frontend/app.py`
+4. **Main file path**: **`app.py`** (저장소 **루트**의 app.py. 이 파일이 frontend 앱을 불러옵니다.)
 5. **Advanced settings**에서 **Python version**을 **3.11**로 선택 (필수).
    - 3.13 사용 시 서버가 기동하지 않아 "connection refused" / "Error running app" 이 발생할 수 있습니다. 앱을 이미 만든 경우, 앱을 삭제한 뒤 새로 만들 때 Python 3.11을 선택하세요.
 
@@ -127,6 +127,7 @@ BACKEND_URL = "https://your-backend-api.com"
 - **포트**: Cloud는 **8501**로 health check 합니다. `config.toml`에 `port = 8503`을 두면 앱은 8503에서만 대기해 **connection refused**가 납니다. 현재는 port를 지정하지 않아 기본 8501을 쓰도록 했습니다.
 - **Python 3.11**: **3.13**이면 기동 실패가 나는 경우가 있으므로, 앱 삭제 후 새 앱 생성 시 **Advanced settings에서 Python version을 3.11**로 선택해 배포하세요.
 - **로컬**: `cd frontend` 후 `streamlit run app.py` 실행. 8503 포트로 쓰려면 `streamlit run app.py --server.port 8503`
+- **루트 진입점**: Cloud에서 **Main file path = app.py**(루트) 사용 시, 루트 app.py가 frontend 앱을 불러와 기동합니다.
 - **Cloud 로그**: 앱 설정 → **Logs** 탭에서 빌드/런타임 오류 확인.
 
 ### 5. 요약
@@ -135,7 +136,7 @@ BACKEND_URL = "https://your-backend-api.com"
 |------|------|
 | 배포 대상 | **프론트엔드(Streamlit)만** Streamlit Cloud에 배포 |
 | 백엔드 | 별도 호스팅 필요 (Selenium/Chrome 사용) |
-| 메인 파일 | `frontend/app.py` |
+| 메인 파일 | 루트 `app.py` (frontend 앱 로드) |
 | 의존성 | 루트 `requirements.txt` 사용 (streamlit, requests, python-dotenv) |
 | Secrets | `BACKEND_URL` = 배포된 백엔드 API URL |
 
@@ -213,7 +214,8 @@ frontend/
   .streamlit/config.toml  # headless, gatherUsageStats (port 미지정 → Cloud 8501 통과)
   requirements.txt   # streamlit, requests, python-dotenv
   .env.example
-.streamlit/config.toml   # 루트: Streamlit Cloud / streamlit run frontend/app.py 시 적용
-requirements.txt        # 루트: Streamlit Cloud 배포 시 의존성 (frontend와 동일)
+app.py                  # 루트: Streamlit Cloud 진입점 (frontend 앱 로드)
+.streamlit/config.toml  # 루트: Cloud 필수 (config는 루트에 두어야 함)
+requirements.txt        # 루트: Cloud 배포 시 의존성
 README.md
 ```
