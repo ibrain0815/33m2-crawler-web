@@ -12,9 +12,12 @@ from typing import Any
 
 import requests
 import streamlit as st
-from dotenv import load_dotenv
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 
 def _get_backend_url() -> str:
@@ -254,4 +257,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        st.error("앱 실행 중 오류가 발생했습니다.")
+        st.code(str(e), language=None)
+        st.exception(e)
