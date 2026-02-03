@@ -4,7 +4,6 @@ Streamlit 프론트엔드 — 에어비앤비 크롤링 UI.
 - 에어비앤비 접속 → 숙박 페이지 선택 후, 주소창 URL을 복사해 아래 입력란에 붙여넣기
 - 크롤링 시작 시 해당 URL로 수집, 진행 현황 실시간 표시 → 엑셀 내보내기
 """
-
 import os
 import time
 from datetime import datetime
@@ -12,12 +11,6 @@ from typing import Any
 
 import requests
 import streamlit as st
-
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except Exception:
-    pass
 
 
 def _get_backend_url() -> str:
@@ -32,6 +25,7 @@ def _get_backend_url() -> str:
     return os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 
 
+# 지연 계산: import 시 st.secrets 미준비로 오류 나는 것 방지 (Streamlit Cloud 등)
 def _backend_url() -> str:
     """매번 조회 (session_state 미사용으로 Cloud 초기화 이슈 회피)."""
     return _get_backend_url()
@@ -103,6 +97,11 @@ def get_download_url(job_id: str) -> str:
 
 
 def main() -> None:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except Exception:
+        pass
     st.set_page_config(page_title="에어비앤비 숙소 크롤러", layout="centered")
     st.title("에어비앤비 숙소 정보 크롤러")
 
@@ -254,10 +253,11 @@ def main() -> None:
             st.error(f"다운로드 요청 실패: {e}")
 
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        st.error("앱 실행 중 오류가 발생했습니다.")
-        st.code(str(e), language=None)
-        st.exception(e)
+# Streamlit Cloud는 스크립트를 import 방식으로 실행할 수 있어, __main__일 때만 실행하면 main()이 호출되지 않을 수 있음.
+# 따라서 조건 없이 main() 실행 (로컬 streamlit run 시에도 동일하게 실행됨)
+try:
+    main()
+except Exception as e:
+    st.error("앱 실행 중 오류가 발생했습니다.")
+    st.code(str(e), language=None)
+    st.exception(e)
