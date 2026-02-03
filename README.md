@@ -103,8 +103,8 @@ streamlit run app.py
 2. **Repository**: 본인 GitHub `사용자명/저장소명` 선택
 3. **Branch**: `main` (또는 사용 중인 브랜치)
 4. **Main file path**: `frontend/app.py`
-5. **Advanced settings** (선택):
-   - **Python version**: 3.10 또는 3.11 권장
+5. **Advanced settings**에서 **Python version**을 **3.11**로 선택 (필수).
+   - 3.13 사용 시 서버가 기동하지 않아 "connection refused" / "Error running app" 이 발생할 수 있습니다. 앱을 이미 만든 경우, 앱을 삭제한 뒤 새로 만들 때 Python 3.11을 선택하세요.
 
 ### 2. Secrets 설정
 
@@ -121,7 +121,13 @@ BACKEND_URL = "https://your-backend-api.com"
 
 **Deploy!** 클릭 후 빌드·실행이 끝나면 앱 URL이 생성됩니다. 해당 URL에서 프론트엔드만 사용하며, 크롤링 요청은 Secrets에 넣은 백엔드로 전달됩니다.
 
-### 4. 요약
+### 4. "Error running app" / "connection refused" 발생 시
+
+- **Python 3.11 사용**: Streamlit Cloud는 배포 시 선택한 Python 버전을 씁니다. **3.13**이면 기동 실패가 나는 경우가 있으므로, **앱 삭제 후 새 앱 생성 시 Advanced settings에서 Python version을 3.11로 선택**해 다시 배포하세요. (이미 만든 앱의 Python 버전은 변경할 수 없습니다.)
+- **로컬**: 터미널에서 `cd frontend` 후 `streamlit run app.py` 로 실행해 터미널에 찍힌 오류 메시지를 확인하세요.
+- **Cloud 로그**: 앱 설정 → **Logs** 탭에서 빌드/런타임 오류 확인. 메인 파일 경로 `frontend/app.py` 인지 확인하세요.
+
+### 5. 요약
 
 | 항목 | 내용 |
 |------|------|

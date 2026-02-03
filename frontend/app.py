@@ -32,11 +32,9 @@ def _get_backend_url() -> str:
     return os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 
 
-# 지연 계산: import 시 st.secrets 미준비로 오류 나는 것 방지 (Streamlit Cloud 등)
 def _backend_url() -> str:
-    if "_backend_url" not in st.session_state:
-        st.session_state["_backend_url"] = _get_backend_url()
-    return st.session_state["_backend_url"]
+    """매번 조회 (session_state 미사용으로 Cloud 초기화 이슈 회피)."""
+    return _get_backend_url()
 
 
 AIRBNB_URL = "https://www.airbnb.co.kr/"
