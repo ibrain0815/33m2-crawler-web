@@ -20,16 +20,21 @@ load_dotenv()
 def _get_backend_url() -> str:
     """로컬은 .env, Streamlit Cloud는 Secrets에서 BACKEND_URL 읽기."""
     try:
-        if hasattr(st, "secrets") and st.secrets:
+        if hasattr(st, "secrets") and st.secrets is not None:
             url = st.secrets.get("BACKEND_URL")
             if url:
                 return str(url).rstrip("/")
-    except (FileNotFoundError, KeyError, TypeError):
+    except Exception:
         pass
     return os.getenv("BACKEND_URL", "http://localhost:8000").rstrip("/")
 
 
-BACKEND_URL = _get_backend_url()
+# 지연 계산: import 시 st.secrets 미준비로 오류 나는 것 방지 (Streamlit Cloud 등)
+def _backend_url() -> str:
+    if "_backend_url" not in st.session_state:
+        st.session_state["_backend_url"] = _get_backend_url()
+    return st.session_state["_backend_url"]
+
 
 AIRBNB_URL = "https://www.airbnb.co.kr/"
 
@@ -37,7 +42,7 @@ AIRBNB_URL = "https://www.airbnb.co.kr/"
 def check_backend() -> bool:
     """백엔드 연결 확인."""
     try:
-        r = requests.get(f"{BACKEND_URL}/health", timeout=3)
+        r = requests.get(f"{_backend_url()}/health", timeout=3)
         return r.status_code == 200
     except Exception:
         return False
@@ -47,7 +52,7 @@ def start_crawl(search_url: str, max_pages: int) -> str | None:
     """POST /crawl 호출 후 job_id 반환. 실패 시 None."""
     try:
         r = requests.post(
-            f"{BACKEND_URL}/crawl",
+            f"{_backend_url()}/crawl",
             json={"search_url": search_url, "max_pages": max_pages},
             timeout=10,
         )
@@ -62,7 +67,7 @@ def poll_status_until_done(job_id: str) -> Any:
     """1초 간격으로 상태 폴링하여 yield. 완료/실패 시 종료."""
     while True:
         try:
-            r = requests.get(f"{BACKEND_URL}/crawl/{job_id}/status/json", timeout=10)
+            r = requests.get(f"{_backend_url()}/crawl/{job_id}/status/json", timeout=10)
             if r.status_code == 404:
                 yield {
                     "status": "failed",
@@ -93,7 +98,7 @@ def poll_status_until_done(job_id: str) -> Any:
 
 
 def get_download_url(job_id: str) -> str:
-    return f"{BACKEND_URL}/crawl/{job_id}/download"
+    return f"{_backend_url()}/crawl/{job_id}/download"
 
 
 def main() -> None:
@@ -151,7 +156,7 @@ def main() -> None:
         else:
             if not check_backend():
                 st.error(
-                    f"백엔드에 연결할 수 없습니다. ({BACKEND_URL})\n\n"
+                    f"백엔드에 연결할 수 없습니다. ({_backend_url()})\n\n"
                     "백엔드를 먼저 실행해 주세요:\n"
                     "`cd backend` 후 `python -m uvicorn main:app --reload`"
                 )
