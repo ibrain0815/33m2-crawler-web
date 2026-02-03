@@ -48,7 +48,7 @@
   - 수집 결과 실시간 데이터프레임
 - **완료 후**: 엑셀 파일 내보내기 버튼 → `GET /crawl/{job_id}/download`로 `.xlsx` 다운로드
 - **404 처리**: `job_id` 없음 시 "작업을 찾을 수 없습니다…" 메시지, `session_state` 초기화 후 `st.rerun()`으로 입력 폼 복귀
-- **설정**: `BACKEND_URL`(기본 `http://localhost:8000`), Streamlit 포트 8503(`.streamlit/config.toml`)
+- **설정**: `BACKEND_URL`(기본 `http://localhost:8000`). 로컬에서 8503 포트로 쓰려면 `frontend/run_local.bat`(Windows) 또는 `run_local.sh`(Mac/Linux) 실행, 또는 `streamlit run app.py --server.port 8503`
 
 ---
 
@@ -80,11 +80,12 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-- 기본 주소: `http://localhost:8503`
+- **8503 포트로 실행**: `frontend` 폴더에서 `run_local.bat`(Windows) 또는 `./run_local.sh`(Mac/Linux) 실행 → **http://localhost:8503**  
+  또는 `streamlit run app.py` 만 실행 시 기본 **http://localhost:8501**
 
 ### 3. 사용 순서
 
-1. 브라우저에서 **http://localhost:8503** 접속
+1. 브라우저에서 **http://localhost:8503** 접속 (위에서 8503으로 실행한 경우. 기본 실행이면 **http://localhost:8501**)
 2. **에어비앤비 접속** 버튼 클릭 → 에어비앤비(https://www.airbnb.co.kr/)가 새 탭에서 열림
 3. 에어비앤비에서 **숙박지 페이지**(검색·필터 적용한 결과)를 선택한 뒤, **주소창의 URL**을 복사
 4. 앱 화면으로 돌아와 **검색 결과 URL** 입력란에 붙여넣기, 최대 크롤링 페이지 수 선택 (1~20)
@@ -123,9 +124,10 @@ BACKEND_URL = "https://your-backend-api.com"
 
 ### 4. "Error running app" / "connection refused" 발생 시
 
-- **Python 3.11 사용**: Streamlit Cloud는 배포 시 선택한 Python 버전을 씁니다. **3.13**이면 기동 실패가 나는 경우가 있으므로, **앱 삭제 후 새 앱 생성 시 Advanced settings에서 Python version을 3.11로 선택**해 다시 배포하세요. (이미 만든 앱의 Python 버전은 변경할 수 없습니다.)
-- **로컬**: 터미널에서 `cd frontend` 후 `streamlit run app.py` 로 실행해 터미널에 찍힌 오류 메시지를 확인하세요.
-- **Cloud 로그**: 앱 설정 → **Logs** 탭에서 빌드/런타임 오류 확인. 메인 파일 경로 `frontend/app.py` 인지 확인하세요.
+- **포트**: Cloud는 **8501**로 health check 합니다. `config.toml`에 `port = 8503`을 두면 앱은 8503에서만 대기해 **connection refused**가 납니다. 현재는 port를 지정하지 않아 기본 8501을 쓰도록 했습니다.
+- **Python 3.11**: **3.13**이면 기동 실패가 나는 경우가 있으므로, 앱 삭제 후 새 앱 생성 시 **Advanced settings에서 Python version을 3.11**로 선택해 배포하세요.
+- **로컬**: `cd frontend` 후 `streamlit run app.py` 실행. 8503 포트로 쓰려면 `streamlit run app.py --server.port 8503`
+- **Cloud 로그**: 앱 설정 → **Logs** 탭에서 빌드/런타임 오류 확인.
 
 ### 5. 요약
 
@@ -206,7 +208,9 @@ backend/
   .env.example
 frontend/
   app.py          # Streamlit: 3단계 UI, _get_backend_url(Secrets/.env), 진행률·엑셀 다운로드
-  .streamlit/config.toml  # port 8503, headless, gatherUsageStats
+  run_local.bat   # Windows: 8503 포트로 로컬 실행
+  run_local.sh    # Mac/Linux: 8503 포트로 로컬 실행
+  .streamlit/config.toml  # headless, gatherUsageStats (port 미지정 → Cloud 8501 통과)
   requirements.txt   # streamlit, requests, python-dotenv
   .env.example
 .streamlit/config.toml   # 루트: Streamlit Cloud / streamlit run frontend/app.py 시 적용
